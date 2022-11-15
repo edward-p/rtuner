@@ -27,7 +27,7 @@ pub fn frequency_to_note(freq: f64) -> (&'static str, i32, f64) {
 
 pub fn get_pitch(data: &[f32], sample_rate: usize) -> (String, f64) {
     let mut detector = YINDetector::new(data.len(), data.len() / 2);
-    let pitch = detector.get_pitch(data, sample_rate, 0.3, 0.2);
+    let pitch = detector.get_pitch(data, sample_rate, 0.3, 0.9);
     if let Some(p) = pitch {
         let note = frequency_to_note(p.frequency.into());
         std::io::stdout().flush().unwrap();

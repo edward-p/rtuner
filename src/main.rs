@@ -30,12 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Failed to get default input config")
         .config();
     config.channels = 1;
-    config.buffer_size = BufferSize::Fixed(512);
-
-    const BUFFER_SIZE: usize = 2048;
-
-    let mut buffer = [0.0_f32; BUFFER_SIZE];
-    let mut index = 0_usize;
+    config.buffer_size = BufferSize::Fixed(1024);
 
     // setup terminal
     enable_raw_mode()?;
@@ -51,17 +46,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let stream = input_device.build_input_stream(
         &config,
         move |data: &[f32], _input_callback_info: &cpal::InputCallbackInfo| {
-            if index >= BUFFER_SIZE {
-                let (note, error) = get_pitch(data, config.sample_rate.0 as usize);
+            let (note, error) = get_pitch(data, config.sample_rate.0 as usize);
 
-                let mut bingding = app1.lock().unwrap();
-                bingding.on_tick(note, error);
-
-                index = 0;
-            }
-            let copy_len = (BUFFER_SIZE - index).min(data.len());
-            buffer[index..index + copy_len].copy_from_slice(&data[..copy_len]);
-            index += copy_len;
+            let mut bingding = app1.lock().unwrap();
+            bingding.on_tick(note, error);
         },
         move |err| {
             // react to errors here.
@@ -72,10 +60,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     stream.play()?;
 
     let mut last_tick = Instant::now();
-    let tick_rate = Duration::from_millis(250);
+    let tick_rate = Duration::from_millis(200);
     loop {
         let binding = app.lock().unwrap();
         terminal.draw(|f| ui::ui(f, &binding))?;
+        drop(binding);
 
         let timeout = tick_rate
             .checked_sub(last_tick.elapsed())

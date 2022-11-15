@@ -11,7 +11,7 @@ const Y_AXIS_BOUND: f64 = 30.0;
 
 pub struct App {
     note_name: String,
-    error: [f64; 10],
+    error: [f64; 3],
     p: usize,
     grid: Vec<(f64, f64)>,
     window: [f64; 2],
@@ -23,7 +23,7 @@ impl App {
         let note_name = "N/A".into();
         App {
             note_name,
-            error: [0.0; 10],
+            error: [0.0; 3],
             p: 0,
             grid,
             window: [0.0, 1.0],
@@ -34,12 +34,12 @@ impl App {
         if note_name == "N/A" {
             return;
         }
-        if self.note_name != note_name {
-            self.p = 0;
-            self.error = [0.0; 10];
-        }
+        // if self.note_name != note_name {
+        //     self.p = 0;
+        //     self.error = [0.0; 3];
+        // }
         self.note_name = note_name;
-        if self.p > 9 {
+        if self.p > 2 {
             self.p = 0;
         }
         self.error[self.p] = error;
@@ -48,7 +48,7 @@ impl App {
 }
 
 pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
-    let avg_error = app.error.iter().sum::<f64>() / 10.0;
+    let avg_error = app.error.iter().sum::<f64>() / 3.0;
     let show_error = avg_error.min(Y_AXIS_BOUND - 1.0);
 
     let signal_data = [(0.1, show_error), (0.9, show_error)];
